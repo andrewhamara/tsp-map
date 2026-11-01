@@ -17,7 +17,7 @@ class Task(Enum):
     READ_MAP = "read-map"
 
 
-MAP = "A bundled map, map-01 to map-40"
+MAP = "A bundled map, map-01 to map-41 (map-41 is the six-city challenge map)"
 CITY_ID = "A city's id: 1, 2, ... in reading order (top to bottom by y, then left to right by x)"
 TOUR = (
     "The cities in visiting order, each exactly once, e.g. [1, 4, 2, 5, 3]; the tour returns from the last city "

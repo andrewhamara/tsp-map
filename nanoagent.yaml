@@ -1,7 +1,7 @@
 _ > nanoagent.plugin.v0001.ManifestConfig:
 id: tsp-map
 name: TSP Map
-version: 0.2.0
+version: 0.3.0
 status: ready
 spec: nanoagent.plugin/v0001
 
@@ -39,4 +39,4 @@ tasks > dict[contract.Task, nanoagent.plugin.v0001.TaskConfig]:
     runner: tool
     tools: [read_map]
     reference: null
-    instructions: Call read_map with the map, map-01 to map-40, and return every city and distance it finds.
+    instructions: Call read_map with the map, map-01 to map-41, and return every city and distance it finds.

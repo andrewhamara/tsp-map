@@ -181,7 +181,7 @@ def test_checks_tool_inputs_and_outputs() -> None:
     def verify_input(tool: str, name: str) -> bool:
         return verifier.verify_input(tool, build_output({"map": name}, TOOLS[Tool(tool)][0]))["valid"]
 
-    assert verify_input("read_map", "map-01") and not verify_input("read_map", "map-41")
+    assert verify_input("read_map", "map-01") and not verify_input("read_map", "map-42")
     assert verify_input("answer_key", "map-40") and not verify_input("answer_key", "map")
 
     def verify_output(tool: str, name: str, made: dict) -> dict:

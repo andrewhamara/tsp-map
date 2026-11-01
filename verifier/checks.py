@@ -15,7 +15,7 @@ def result(valid, message, *, score=None, **details):
 
 def map_problem(name):
     if name not in MAPS:
-        return f"no map {name!r}: the maps are map-01 to map-40"
+        return f"no map {name!r}: the maps are map-01 to map-41"
     return None
 
 

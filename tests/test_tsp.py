@@ -42,6 +42,25 @@ def test_the_boundary_maps_have_ties_or_the_shape_they_were_drawn_for() -> None:
     assert len(optimum("map-38")[1]) == 1
 
 
+def test_the_challenge_map_traps_nearest_neighbor_in_a_2_opt_optimum() -> None:
+    # map-41: from every start, the nearest-neighbor tour admits no improving 2-opt swap, yet it is at
+    # least 8% longer than the shortest tour.
+    distances = table(list(MAPS["map-41"]))
+    best, _ = optimum("map-41")
+    count = len(distances)
+    assert count == 6 and best == 622
+    for start in range(1, count + 1):
+        tour = [start]
+        while len(tour) < count:
+            tour.append(min((d, j + 1) for j, d in enumerate(distances[tour[-1] - 1]) if j + 1 not in tour)[1])
+        for i in range(count - 1):
+            for j in range(i + 2, count if i else count - 1):
+                a, b, c, e = tour[i], tour[i + 1], tour[j], tour[(j + 1) % count]
+                swapped = distances[a - 1][c - 1] + distances[b - 1][e - 1]
+                assert swapped >= distances[a - 1][b - 1] + distances[c - 1][e - 1]
+        assert tour_length(tour, distances) >= best * 1.08
+
+
 @pytest.mark.parametrize(
     ("tour", "problem"),
     [

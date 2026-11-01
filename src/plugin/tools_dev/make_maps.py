@@ -4,7 +4,7 @@ for the page's pictures, ui/maps.js.
     uv run python -m plugin.tools_dev.make_maps
 
 Maps 01 to 35 are random from fixed seeds, 5 cities on odd maps and 4 on even ones; 36 to 40 are
-drawn by hand for boundary cases, 5 cities each. Maps stay this small because RUSH Lab's model must
+drawn by hand for boundary cases, 5 cities each; 41 is the six-city challenge map. Maps stay this small because RUSH Lab's model must
 find and submit a tour within one 2,048-token reply, reasoning included: at 6 cities and more it
 mostly ran out of that reply before submitting. Each image is checked before anything is written: read_map must
 find exactly the cities drawn. Running it again writes the same files.
@@ -50,6 +50,12 @@ BY_HAND = {
     # A plus sign: four arms around a center, so the center sits between any two neighboring arms and
     # several tours tie; arm to arm is a rounded diagonal.
     40: [(240, 80), (140, 180), (240, 180), (340, 180), (240, 280)],
+    # map-41, the challenge map: six cities, one more than the others, laid out as a trap. From every
+    # starting city, going to the nearest unvisited city gives a tour (672 from city 1) that no single
+    # 2-opt swap improves, yet the shortest tour is 622, 8% shorter: the only one of 200,000 random
+    # six-city maps searched with that property. RUSH Lab's model, within its 2,048-token reply, has
+    # not finished a six-city map: it runs out of the reply while checking tours, before submitting.
+    41: [(215, 128), (281, 210), (399, 218), (190, 225), (268, 282), (350, 319)],
 }
 
 
@@ -78,7 +84,7 @@ def draw(cities: list[tuple[int, int]]) -> Image.Image:
 
 def main() -> None:
     maps = {}
-    for number in range(1, 41):
+    for number in range(1, 42):
         cities = BY_HAND.get(number) or random_map(2026_11 + number, 4 + number % 2)
         image = draw(cities)
         expected = sorted(cities, key=lambda city: (city[1], city[0]))

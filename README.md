@@ -2,12 +2,36 @@
 
 A `nanoagent.plugin/v0001` plugin: the traveling salesman problem on a map
 image, for a text-only agent. Each of 40 bundled maps shows 4 or 5 cities as
-dots. The agent cannot see pixels, so its one tool, a deterministic map
+dots, and a 41st, the challenge map, shows 6. The agent cannot see pixels, so its one tool, a deterministic map
 reader, finds the cities in the image and measures the distance between every
 two; the agent searches for the shortest round trip through all of them and
 states its length. The verifier knows where every city was drawn, computes the
 true optimum with Held-Karp, and checks the tour, the claimed length, and how
 close the tour comes to the shortest.
+
+## Try map-41: the challenge map
+
+> **On RUSH Lab, ask: "Find the shortest tour of map-41".** It is the one map
+> built for the agent to fail.
+
+Maps 01 to 40 have 4 or 5 cities, and RUSH Lab's model solves them. map-41
+has six cities, laid out as a trap:
+
+- **The usual shortcut gets stuck.** From every starting city, going to the
+  nearest unvisited city gives a tour (672 from city 1) that no single 2-opt
+  swap improves, yet the shortest tour is **622**, 8% shorter. It was the only
+  one of 200,000 random six-city maps searched with that property, and
+  `tests/test_tsp.py` proves it.
+- **The model runs out of room.** RUSH Lab's model must find and submit a tour
+  within one 2,048-token reply, reasoning included. On six-city maps it has
+  run out of that reply while still checking tours, and ended without
+  submitting. That is the failure to expect here. An agent that submitted the
+  shortcut's tour instead would score 622 / 672 = 0.93.
+- **It costs little.** A run stops at the model's reply limit and RUSH Lab's
+  per-run caps (6 steps, $0.10). In testing, a map-41 run cost about $0.0004.
+
+The answer: **1 → 2 → 3 → 6 → 5 → 4 → 1, length 622** (or the same tour from
+any city, in either direction).
 
 ## Tools
 
@@ -30,7 +54,7 @@ dashed beside it, the lengths and the verdict's checks.
 
 ## The task
 
-The input is a map, `map-01` to `map-40`. The agent submits `tour` (the city
+The input is a map, `map-01` to `map-41`. The agent submits `tour` (the city
 ids in visiting order, each once; the return to the first city is implied)
 and `length`, the tour's length as it computed it. The rules, in `tsp.py`:
 
@@ -45,7 +69,7 @@ and `length`, the tour's length as it computed it. The rules, in `tsp.py`:
 
 `src/plugin/tools_dev/make_maps.py` draws every map, `ui/maps/map-NN.png`,
 from fixed seeds (maps 01 to 35: 5 cities on odd maps, 4 on even ones) or by
-hand (36 to 40, the boundary maps, 5 cities each), and writes the cities it drew to
+hand (36 to 40, the boundary maps, 5 cities each, and 41, the challenge map), and writes the cities it drew to
 `verifier/maps.py` (and `ui/maps.js`, for the page). It refuses to write
 anything unless `read_map` finds exactly the drawn cities in every image, and
 the tests check that again. The verifier never reads an image and never
@@ -60,6 +84,7 @@ every tour of every map.
 | `map-38` | Five cities on a circle, not in reading order around it: the shortest tour goes around it |
 | `map-39` | Two clusters far apart: a shortest tour crosses between them exactly twice |
 | `map-40` | A plus sign: the center goes between two neighboring arms, and four tours tie |
+| `map-41` | The challenge map, six cities: every nearest-neighbor tour is stuck in a 2-opt optimum 8% above the shortest (see above) |
 
 ## Constraints
 
@@ -87,8 +112,8 @@ shortest one.
 ## Limitations
 
 - **The agent never sees pixels.** It tests combinatorial search over a perceived map, not perception; the reader works only on these flat, synthetic maps.
-- **Small maps.** 4 or 5 cities (3 or 12 distinct tours). RUSH Lab's model must find and submit a tour within one 2,048-token reply, reasoning included; in an evaluation with 5 to 9 cities it solved every 5-city map but mostly ran out of that reply at 6 cities and more, never submitting. So the task tests careful search and arithmetic on small maps, not large-scale optimization.
-- **A fixed set of 40 maps.** An agent could in principle memorize them; new seeds make new maps.
+- **Small maps.** 4 or 5 cities (3 or 12 distinct tours), and 6 on map-41. RUSH Lab's model must find and submit a tour within one 2,048-token reply, reasoning included; in an evaluation with 5 to 9 cities it solved every 5-city map but mostly ran out of that reply at 6 cities and more, never submitting. So the task tests careful search and arithmetic on small maps, not large-scale optimization.
+- **A fixed set of 41 maps.** An agent could in principle memorize them; new seeds make new maps.
 - **Rounded distances.** Distances are whole numbers, so the optimum is for the rounded table, as in TSPLIB, not for exact Euclidean lengths.
 
 ## Layout
@@ -106,7 +131,7 @@ shortest one.
 ├── src/plugin/      # the MCP server (__main__.py), read_map.py, answer.py, tsp.py (the rules),
 │                    #   and tools_dev/ (make_maps.py draws the maps; demo.py shows a few verdicts)
 ├── tests/           # the reader, the rules against brute force, the verifier and scripted agents
-├── ui/              # maps/ (the 40 PNGs, which read_map reads and the page shows), maps.js (their
+├── ui/              # maps/ (the 41 PNGs, which read_map reads and the page shows), maps.js (their
 │                    #   cities, for drawing tours) and renderers.js/.css (results on the map)
 ├── product/         # the product page a catalog shows: product.yaml and icon.svg
 └── verifier/        # deterministic verifier: maps.py (the truth), tsp.py (a copy of the rules),

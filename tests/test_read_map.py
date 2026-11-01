@@ -21,7 +21,7 @@ def test_finds_exactly_the_cities_each_map_was_drawn_with(tmp_path: Path, name: 
     assert found.distances == [[distance(a, b) for b in cities] for a in cities]
 
 
-@pytest.mark.parametrize("name", ["map-00", "map-41", "map-1", "../map-01", ""])
+@pytest.mark.parametrize("name", ["map-00", "map-42", "map-1", "../map-01", ""])
 def test_refuses_a_map_that_is_not_bundled(tmp_path: Path, name: str) -> None:
     with pytest.raises(ValueError, match="no map"):
         read_map(MapInput(map=name), tmp_path)

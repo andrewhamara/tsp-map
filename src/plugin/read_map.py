@@ -29,7 +29,7 @@ DOT = 13  # a city's width and height in pixels
 def map_path(name: str) -> Path:
     path = MAPS / f"{name}.png"
     if not MAP_ID.fullmatch(name) or not path.is_file():
-        raise ValueError(f"no map {name!r}: the maps are map-01 to map-40")
+        raise ValueError(f"no map {name!r}: the maps are map-01 to map-41")
     return path
 
 
