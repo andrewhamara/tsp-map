@@ -1,0 +1,42 @@
+_ > nanoagent.plugin.v0001.ManifestConfig:
+id: tsp-map
+name: TSP Map
+version: 0.1.0
+status: ready
+spec: nanoagent.plugin/v0001
+
+runtime > nanoagent.plugin.v0001.RuntimeConfig:
+  type: mcp_stdio
+  command: [uv, run, --frozen, python, -m, plugin]
+
+permissions > nanoagent.plugin.v0001.PermissionsConfig:
+  network > nanoagent.plugin.v0001.NetworkConfig:
+    hosts: []
+  filesystem > nanoagent.plugin.v0001.FilesystemConfig:
+    write: [workspace]
+
+# One entry per contract.Tool; its input and output classes are contract.TOOLS's.
+tools > dict[contract.Tool, nanoagent.plugin.v0001.ToolConfig]:
+  read_map:
+    description: Find every city on a bundled map image from its pixels, with its id and center, and the whole-number distance between every two cities
+  answer_key:
+    description: Find a shortest tour of a map's cities by Held-Karp over the distances read from its image
+
+# One entry per contract.Task; its input and output classes are contract.TASKS's.
+tasks > dict[contract.Task, nanoagent.plugin.v0001.TaskConfig]:
+  shortest-tour:
+    description: Find the shortest tour that visits every city on a map once and returns to the start (the traveling salesman problem)
+    runner: agent
+    tools: [read_map]
+    reference: answer_key
+    instructions: |-
+      Look. Call read_map once with the map. It lists every city with its id and center, and distances: the whole-number distance between every two cities (row i, column j is the distance from city i to city j).
+      Goal. Find a closed tour: visit every city exactly once and return to the first, with the least total distance. Any starting city and either direction is fine.
+      Length. The tour's length is the sum of the distances between consecutive cities, the return from the last city to the first included. Add it carefully: the length you submit must be the tour's real length.
+      Submit. Call submit with the map, tour (the city ids in visiting order, each once; do not repeat the first city at the end) and length. Keep your reasoning short: your reply is limited.
+  read-map:
+    description: Show a map's picture and list its cities and the distances between them; use it whenever the person wants to see a map or what is on it
+    runner: tool
+    tools: [read_map]
+    reference: null
+    instructions: Call read_map with the map, map-01 to map-40, and return every city and distance it finds.
