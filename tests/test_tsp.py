@@ -36,7 +36,8 @@ def test_held_karp_finds_the_brute_force_optimum(name: str) -> None:
 def test_the_boundary_maps_have_ties_or_the_shape_they_were_drawn_for() -> None:
     assert len(optimum("map-36")[1]) > 1 and optimum("map-36")[0] == 2 * (420 - 60)
     assert len(optimum("map-37")[1]) > 1
-    assert len(optimum("map-40")[1]) > 1 and optimum("map-40")[0] == 1016
+    # The plus sign: two arm-to-center steps of 100 and three diagonals of 141.
+    assert len(optimum("map-40")[1]) > 1 and optimum("map-40")[0] == 2 * 100 + 3 * 141
     # Around the circle: consecutive cities by angle, which reading order does not give.
     assert len(optimum("map-38")[1]) == 1
 

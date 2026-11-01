@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from oracle import length, optimum
+from oracle import length, longest, optimum
 from slimconfig import build_output, plain_output
 
 import verifier
@@ -41,7 +41,7 @@ def test_approves_a_shortest_tour() -> None:
     best, tours = optimum("map-05")
     verdict = verify_task("map-05", list(tours[0]))
     assert verdict["valid"] is True and verdict["score"] == 1.0
-    assert verdict["message"] == f"All 6 checks hold: the tour of map-05's 9 cities is {best} long, the shortest possible."
+    assert verdict["message"] == f"All 6 checks hold: the tour of map-05's 5 cities is {best} long, the shortest possible."
 
 
 def test_a_shortest_tour_passes_from_any_start_in_either_direction() -> None:
@@ -64,7 +64,7 @@ def test_every_tied_shortest_tour_passes(name: str) -> None:
 
 def test_a_longer_tour_scores_by_how_close_it_comes() -> None:
     best, _ = optimum("map-05")
-    tour = list(range(1, 10))
+    tour = list(longest("map-05"))
     real = length(tour, MAPS["map-05"])
     verdict = verify_task("map-05", tour)
     assert verdict["valid"] is False and verdict["score"] == round(best / real, 4)
@@ -81,7 +81,7 @@ def test_a_wrong_claimed_length_halves_the_score() -> None:
 
 def test_claiming_the_optimum_for_a_longer_tour_is_caught() -> None:
     best, _ = optimum("map-05")
-    tour = list(range(1, 10))
+    tour = list(longest("map-05"))
     verdict = verify_task("map-05", tour, claimed=best)
     assert checks(verdict)["length-claimed"] is False and checks(verdict)["shortest"] is False
     assert verdict["score"] == round(best / length(tour, MAPS["map-05"]) / 2, 4)
@@ -111,8 +111,8 @@ def test_an_empty_tour_scores_zero() -> None:
 
 
 def test_a_tour_missing_a_city_scores_zero() -> None:
-    verdict = verify_task("map-05", [1, 2, 3, 4, 5, 6, 7, 8], claimed=100)
-    assert verdict["score"] == 0.0 and "city 9 is never visited" in verdict["message"]
+    verdict = verify_task("map-05", [1, 2, 3, 4], claimed=100)
+    assert verdict["score"] == 0.0 and "city 5 is never visited" in verdict["message"]
 
 
 def test_no_answer_key_scores_zero() -> None:
@@ -127,9 +127,9 @@ def test_no_answer_key_scores_zero() -> None:
 @pytest.mark.parametrize(
     ("tour", "message"),
     [
-        ([1, 2, 3, 4, 5, 6, 7, 8, 9, 1], "city 1 is visited more than once"),
-        ([1, 2, 3, 4, 5, 6, 7, 8, 10], "city 10 is not on the map"),
-        ([0, 1, 2, 3, 4, 5, 6, 7, 8], "city 0 is not on the map"),
+        ([1, 2, 3, 4, 5, 1], "city 1 is visited more than once"),
+        ([1, 2, 3, 4, 6], "city 6 is not on the map"),
+        ([0, 1, 2, 3, 4], "city 0 is not on the map"),
     ],
 )
 def test_a_repeated_or_unknown_city_scores_zero(tour: list[int], message: str) -> None:
@@ -138,7 +138,8 @@ def test_a_repeated_or_unknown_city_scores_zero(tour: list[int], message: str) -
 
 
 def test_an_answer_key_that_is_not_shortest_fails_the_run() -> None:
-    wrong = key_for("map-05") | {"tour": list(range(1, 10)), "length": length(list(range(1, 10)), MAPS["map-05"])}
+    worse = list(longest("map-05"))
+    wrong = key_for("map-05") | {"tour": worse, "length": length(worse, MAPS["map-05"])}
     verdict = verify_task("map-05", list(optimum("map-05")[1][0]), reference=wrong)
     assert verdict["valid"] is False and verdict["score"] == 0.0 and verdict["message"].startswith("answer-key:")
 
@@ -165,10 +166,12 @@ def test_on_a_line_going_out_and_back_is_shortest() -> None:
     assert zigzag["valid"] is False and 0 < zigzag["score"] < 1
 
 
-def test_the_grid_needs_one_diagonal() -> None:
-    # 1-2-3 / 4-5-6 / 7-8-9: eight grid steps and one diagonal is 1016; a tour of 2 diagonals is longer.
-    assert verify_task("map-40", [1, 2, 3, 6, 9, 5, 8, 7, 4])["valid"] is True
-    assert verify_task("map-40", [1, 2, 3, 6, 5, 9, 8, 7, 4])["valid"] is False
+def test_the_plus_sign_visits_its_center_between_neighboring_arms() -> None:
+    # Arms 1 (top), 2 (left), 4 (right), 5 (bottom) around center 3: 1-3-2 then the diagonals is 623;
+    # passing through the center between opposite arms, 5-3-1, is longer.
+    assert verify_task("map-40", [1, 3, 2, 5, 4])["valid"] is True
+    assert verify_task("map-40", [1, 2, 5, 3, 4])["valid"] is True
+    assert verify_task("map-40", [1, 3, 5, 2, 4])["valid"] is False
 
 
 # Tool calls
@@ -190,7 +193,7 @@ def test_checks_tool_inputs_and_outputs() -> None:
     moved = found | {"cities": [found["cities"][0] | {"x": 1}, *found["cities"][1:]]}
     assert "city 1 of map-05 is reported at" in verify_output("read_map", "map-05", moved)["message"]
     dropped = found | {"cities": found["cities"][:-1]}
-    assert "has 9 cities, not 8" in verify_output("read_map", "map-05", dropped)["message"]
+    assert "has 5 cities, not 4" in verify_output("read_map", "map-05", dropped)["message"]
     shifted = found | {"distances": [[d + 1 for d in row] for row in found["distances"]]}
     assert "distance table" in verify_output("read_map", "map-05", shifted)["message"]
     assert verify_output("read_map", "map-06", found)["valid"] is False
@@ -207,6 +210,4 @@ def test_the_read_map_task_is_judged_as_its_tool() -> None:
 
 
 def test_the_verdict_is_the_same_twice() -> None:
-    assert verify_task("map-05", [1, 2, 3, 4, 5, 6, 7, 8, 9], claimed=5) == verify_task(
-        "map-05", [1, 2, 3, 4, 5, 6, 7, 8, 9], claimed=5
-    )
+    assert verify_task("map-05", [1, 2, 3, 4, 5], claimed=5) == verify_task("map-05", [1, 2, 3, 4, 5], claimed=5)

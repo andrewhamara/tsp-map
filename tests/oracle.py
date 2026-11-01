@@ -19,6 +19,13 @@ def length(tour: list[int], cities: tuple[tuple[int, int], ...]) -> int:
 
 
 @cache
+def longest(name: str) -> tuple[int, ...]:
+    """A longest tour: never a shortest one on these maps."""
+    cities = MAPS[name]
+    return max(((1, *rest) for rest in permutations(range(2, len(cities) + 1))), key=lambda t: length(list(t), cities))
+
+
+@cache
 def optimum(name: str) -> tuple[int, tuple[tuple[int, ...], ...]]:
     """The shortest length and every shortest tour, each once: starting at city 1, in the direction
     whose second city is smaller."""

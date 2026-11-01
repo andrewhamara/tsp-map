@@ -1,7 +1,7 @@
 # TSP Map
 
 A `nanoagent.plugin/v0001` plugin: the traveling salesman problem on a map
-image, for a text-only agent. Each of 40 bundled maps shows 5 to 9 cities as
+image, for a text-only agent. Each of 40 bundled maps shows 4 or 5 cities as
 dots. The agent cannot see pixels, so its one tool, a deterministic map
 reader, finds the cities in the image and measures the distance between every
 two; the agent searches for the shortest round trip through all of them and
@@ -44,8 +44,8 @@ and `length`, the tour's length as it computed it. The rules, in `tsp.py`:
 ## Ground truth
 
 `src/plugin/tools_dev/make_maps.py` draws every map, `ui/maps/map-NN.png`,
-from fixed seeds (maps 01 to 35, seven each of 5, 6, 7, 8 and 9 cities) or by
-hand (36 to 40, the boundary maps), and writes the cities it drew to
+from fixed seeds (maps 01 to 35: 5 cities on odd maps, 4 on even ones) or by
+hand (36 to 40, the boundary maps, 5 cities each), and writes the cities it drew to
 `verifier/maps.py` (and `ui/maps.js`, for the page). It refuses to write
 anything unless `read_map` finds exactly the drawn cities in every image, and
 the tests check that again. The verifier never reads an image and never
@@ -57,9 +57,9 @@ every tour of every map.
 |---|---|
 | `map-36` | Five cities on one line: every shortest tour goes out and back, and several tie |
 | `map-37` | A square's corners and its center: symmetric ties |
-| `map-38` | Nine cities on a circle: the shortest tour goes around it |
+| `map-38` | Five cities on a circle, not in reading order around it: the shortest tour goes around it |
 | `map-39` | Two clusters far apart: a shortest tour crosses between them exactly twice |
-| `map-40` | A 3x3 grid: many tours tie, and one diagonal is needed |
+| `map-40` | A plus sign: the center goes between two neighboring arms, and four tours tie |
 
 ## Constraints
 
@@ -87,7 +87,7 @@ shortest one.
 ## Limitations
 
 - **The agent never sees pixels.** It tests combinatorial search over a perceived map, not perception; the reader works only on these flat, synthetic maps.
-- **Small maps.** At most 9 cities, so that Held-Karp, and brute force in the tests, stay instant. An agent that could enumerate all 20,160 tours of 9 cities would solve every map.
+- **Small maps.** 4 or 5 cities (3 or 12 distinct tours). RUSH Lab's model must find and submit a tour within one 2,048-token reply, reasoning included; in an evaluation with 5 to 9 cities it solved every 5-city map but mostly ran out of that reply at 6 cities and more, never submitting. So the task tests careful search and arithmetic on small maps, not large-scale optimization.
 - **A fixed set of 40 maps.** An agent could in principle memorize them; new seeds make new maps.
 - **Rounded distances.** Distances are whole numbers, so the optimum is for the rounded table, as in TSPLIB, not for exact Euclidean lengths.
 

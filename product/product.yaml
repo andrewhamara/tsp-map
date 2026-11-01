@@ -1,8 +1,8 @@
 _ > nanoagent.plugin.v0001.ProductConfig:
 tagline: "The traveling salesman on a map image: find the shortest tour, checked against the exact optimum"
-summary: "Pick one of 40 maps of 5 to 9 cities and ask for the shortest round trip that visits every city once. The agent cannot see pixels, so a map reader finds the cities in the image and measures every distance; the agent searches for the best tour and states its length. The verifier knows where every city was drawn, computes the true optimum with Held-Karp, and checks the tour, the claimed length and how close the tour comes to the shortest."
+summary: "Pick one of 40 maps of 4 or 5 cities and ask for the shortest round trip that visits every city once. The agent cannot see pixels, so a map reader finds the cities in the image and measures every distance; the agent searches for the best tour and states its length. The verifier knows where every city was drawn, computes the true optimum with Held-Karp, and checks the tour, the claimed length and how close the tour comes to the shortest."
 highlights:
-  - "40 bundled maps from 5 to 9 cities, including ties, a straight line, a circle, two clusters and a grid"
+  - "40 bundled maps of 4 or 5 cities, including ties, a straight line, a circle, two clusters and a plus sign"
   - "Exact ground truth: the shortest tour by Held-Karp, so every answer is right or measurably off"
   - "Partial credit by how close the tour comes to the optimum, and a check that the agent's claimed length is true"
 steps:

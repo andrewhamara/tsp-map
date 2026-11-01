@@ -3,8 +3,10 @@ for the page's pictures, ui/maps.js.
 
     uv run python -m plugin.tools_dev.make_maps
 
-Maps 01 to 35 are random from fixed seeds, seven each of 5, 6, 7, 8 and 9 cities; 36 to 40 are
-drawn by hand for boundary cases. Each image is checked before anything is written: read_map must
+Maps 01 to 35 are random from fixed seeds, 5 cities on odd maps and 4 on even ones; 36 to 40 are
+drawn by hand for boundary cases, 5 cities each. Maps stay this small because RUSH Lab's model must
+find and submit a tour within one 2,048-token reply, reasoning included: at 6 cities and more it
+mostly ran out of that reply before submitting. Each image is checked before anything is written: read_map must
 find exactly the cities drawn. Running it again writes the same files.
 """
 
@@ -41,12 +43,13 @@ BY_HAND = {
     36: [(60, 180), (150, 180), (240, 180), (330, 180), (420, 180)],
     # A square's corners and its center: the symmetry makes several shortest tours tie.
     37: [(140, 80), (340, 80), (140, 280), (340, 280), (240, 180)],
-    # Nine cities on a circle: the shortest tour goes around it.
-    38: ring(9, 140, 240, 180),
+    # Five cities on a circle, not in reading order around it: the shortest tour goes around it.
+    38: ring(5, 140, 240, 180),
     # Two clusters far apart: a shortest tour crosses between them exactly twice.
-    39: [(60, 60), (120, 50), (80, 120), (140, 110), (330, 250), (400, 240), (350, 310), (430, 300), (390, 280)],
-    # A 3x3 grid: many tours tie, and rounding meets exact distances.
-    40: [(x, y) for y in (80, 180, 280) for x in (120, 240, 360)],
+    39: [(60, 60), (130, 50), (90, 120), (380, 260), (430, 310)],
+    # A plus sign: four arms around a center, so the center sits between any two neighboring arms and
+    # several tours tie; arm to arm is a rounded diagonal.
+    40: [(240, 80), (140, 180), (240, 180), (340, 180), (240, 280)],
 }
 
 
@@ -76,7 +79,7 @@ def draw(cities: list[tuple[int, int]]) -> Image.Image:
 def main() -> None:
     maps = {}
     for number in range(1, 41):
-        cities = BY_HAND.get(number) or random_map(2026_11 + number, 5 + (number - 1) % 5)
+        cities = BY_HAND.get(number) or random_map(2026_11 + number, 4 + number % 2)
         image = draw(cities)
         expected = sorted(cities, key=lambda city: (city[1], city[0]))
         found = find_cities(image)

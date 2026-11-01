@@ -76,7 +76,7 @@ def judge(name: str, key: dict, label: str, tour: list[int], claimed: int) -> No
 
 def main() -> None:
     folder = Path(tempfile.mkdtemp(prefix="tsp-map-demo-"))
-    for name, title in (("map-05", "Nine random cities"), ("map-40", "Boundary: a 3x3 grid, where four shortest tours tie")):
+    for name, title in (("map-05", "Five random cities"), ("map-39", "Boundary: two clusters far apart")):
         print(f"\n{BOLD}━━━ {name}: {title} ━━━{RESET}")
         found = plain_output(read_map(MapInput(map=name), folder))
         cities = [(c["x"], c["y"]) for c in found["cities"]]
